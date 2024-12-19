@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rules\Exists;
+use PHPUnit\Framework\Constraint\FileExists;
+
+use function Pest\Laravel\delete;
 
 class PostController extends Controller
 {
@@ -29,17 +34,21 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->hasFile("image")) {
-            $imageName = $request->file("image")->getClientOriginalName() . '-' . time() .
-            '.' . $request->file("image")->getClientOriginalExtension();
-            $request->file("image")->move(public_path("/assets/images") , $imageName);
+        $rightImages = [];
+        if ($request->hasFile("images")) {
+            foreach ($request->file("images") as $image) {
+                $imageName = $image->getClientOriginalName() . '-' . time() .
+                    '.' . $image->getClientOriginalExtension();
+                $image->move(public_path("/assets/images"), $imageName);
+                $rightImages[] = $imageName;
+            }
         }
 
         Post::create(
             [
                 "title" => $request->title,
                 "description" => $request->description,
-                "image" => $imageName
+                "images" => json_encode($rightImages)
             ]
         );
         return redirect()->route("posts.index");
@@ -50,7 +59,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        return view('posts.show' , compact('post'));
+        return view('posts.show', compact('post'));
     }
 
     /**
@@ -66,17 +75,42 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        if($request->hasFile('image')){
-            $imageName=$request->file('image')->getClientOriginalName() . '-' . time() . '.' . $request->file('image')->getClientOriginalExtension() ;
-            $request->file('image')->move(public_path('/assets/images'), $imageName );
-        }else{
-            $imageName=$post->image;
+        $imgsarray = json_decode($post->images);
+
+        if ($request->hasFile('images')) {
+            foreach ($imgsarray as $image) {
+               /*  $pathImage = public_path('/assets/images/' . $image);
+                if (File::exists($pathImage)) {
+                    File::delete($pathImage);
+                } */
+
+                $image_path = public_path("/assets/images/" . $image);
+
+                if (file_exists($image_path)) {
+
+                    unlink($image_path);
+                }
+
+                /* if(file_exists($pathImage)){
+                    unlink($pathImage);
+                    delete($pathImage);
+                    
+                } */
+            }
+            $rightImages = [];
+            foreach ($request->file('images')  as $image) {
+                $imageName = $image->getClientOriginalName() . '-' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('/assets/images'), $imageName);
+                $rightImages[] = $imageName;
+            }
+        } else {
+            $rightImages[] = $imgsarray;
         }
 
         $post->update([
-        "title" => $request->title ,
-        "description" => $request->description,
-        "image" =>$imageName
+            "title" => $request->title,
+            "description" => $request->description,
+            "images" => json_encode($rightImages)
         ]);
         return redirect()->route('posts.index');
     }

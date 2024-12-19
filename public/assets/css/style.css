@@ -5,8 +5,9 @@
 }
 
 img{
-    width: 300px;
-
+    width: 286.4px !important ;
+    height: 229px;
+    margin-bottom: 10px;
 }
 
 .m-20{

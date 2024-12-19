@@ -12,9 +12,9 @@
             <textarea class="form-control" name="description" rows="3" placeholder="post description"> </textarea>
         </div>
         <div class="mb-3">
-            <input type="file" name="image">
+            <input required type="file" name="images[]" multiple>
         </div>
-        <input type="submit" class="btn btn-primary" value="send">
+        <input required type="submit" class="btn btn-primary" value="send">
     </form>
 
 @endsection
