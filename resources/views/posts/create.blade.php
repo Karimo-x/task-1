@@ -14,7 +14,7 @@
         <div class="mb-3">
             <input required type="file" name="images[]" multiple>
         </div>
-        <input required type="submit" class="btn btn-primary" value="send">
+        <input type="submit" class="btn btn-primary" value="send">
     </form>
 
 @endsection
